@@ -27,13 +27,10 @@ const noJob = document.getElementById('no_job')
 console.log("🚀 ~ noJob:", noJob)
 
 const isVerified = JSON.parse(localStorage.getItem('verified'))
-const isEmpty = JSON.parse(localStorage.getItem('is_empty'))
+const city = JSON.parse(localStorage.getItem('city'))
+const country = JSON.parse(localStorage.getItem('country'))
 
-if (isEmpty) {
-  noJob.innerText = 'Your Jobs list will appear here!'
-} else {
-  noJob.innerText = ''
-}
+
 
 // if(loading){
 //   const img = document.createElement('img')
@@ -61,21 +58,15 @@ getAllJobs()
 
 
 function jobs(id, data) {
-
-  // const img = document.createElement('img')
-  // img.setAttribute('src', './asset/loader.gif')
-  // if (loading) {
-  //   jobsEl.appendChild(img)
-  // }else{{
-  //   jobsEl.removeChild(img)
-  // }}
-
+  if (data) {
+    noJob.innerText = ''
+  }
   const job = document.createElement('div')
   job.innerHTML += `
    <div key=${id} class="flex items-center justify-between py-5 px-6 bg-[#1e1c24] rounded-xl mb-3">
             <div>
                 <h2 class="text-base font-medium text-white font_poppins">${data.position}</h2>
-                <span class="font_poppins text-[#8F8F9E] text-sm">Karachi, Pakistan</span>
+                <span class="font_poppins text-[#8F8F9E] text-sm">${city ?city+',': '' }${country ?country: ''}</span>
             </div>
              <div class="flex gap-5">
                <button class='edit_job' data-id=${id}>
@@ -98,6 +89,7 @@ async function deleteJob(e, id) {
   e.stopPropagation();
   await deleteDoc(doc(db, 'jobs', id));
   window.alert('job has success full delete')
+  location.reload();
 }
 
 function editJob(e, id) {
@@ -127,12 +119,12 @@ loginHandle()
 
 
 
-if (isVerified) {
-  main.innerHTML = ''
-  main.appendChild(jobList)
-} else {
+if (isVerified === false) {
   main.removeChild(jobList)
   loginHandle()
+} else if(isVerified === true) {
+  main.innerHTML = ''
+  main.appendChild(jobList)
 }
 
 
@@ -171,19 +163,23 @@ function handleSwitchToSignup() {
 function loginWithUserCredentials(email, password) {
   const emailValue = email.value
   const passwordValue = password.value
-
+if (!emailValue) {
+  window.alert('Please enter email!')
+}else if (!passwordValue) {
+  window.alert('please enter your password!')
+}else{
   signInWithEmailAndPassword(auth, emailValue, passwordValue).then(() => {
-    console.log('success! Welcome back!')
     window.alert('success! Welcome back!')
     localStorage.setItem('verified', true)
+    main.innerHTML = ''
+    main.appendChild(jobList)
   }
-  ).catch((error) => {
-    console.log(error.message, '>>>>error')
+  ).catch(() => {
     window.alert('invalid credentials try again')
     localStorage.setItem('verified', false)
   })
-  main.innerHTML = ''
-  main.appendChild(jobList)
+}
+
 }
 
 
@@ -224,16 +220,24 @@ function handleSignUp(name, email, password) {
   const nameValue = name.value
   const emailValue = email.value
   const passwordvlue = password.value
-  localStorage.setItem('username', JSON.stringify(nameValue))
-  createUserWithEmailAndPassword(auth, emailValue, passwordvlue).then((userCredential) => {
-    console.log('userCredential >>>', userCredential)
-    window.alert('user created')
-  }).catch((error) => {
-    console.log('error', error.message)
-    window.alert('usera already exits')
-  })
-  main.innerHTML = ''
-  loginHandle()
+
+  if (!nameValue) {
+    window.alert('please enter name!')
+  }else if(!emailValue){
+    window.alert('please enter email!')
+  }else if(!passwordvlue){
+    window.alert('plaese enter password!')
+  }else{
+    localStorage.setItem('username', JSON.stringify(nameValue))
+    createUserWithEmailAndPassword(auth, emailValue, passwordvlue).then(() => {
+      window.alert('user created')
+      main.innerHTML = ''
+      loginHandle()
+    }).catch((error) => {
+      console.log('error', error.message)
+      window.alert('usera already exits please sign in')
+    })
+  }
 }
 
 
@@ -270,6 +274,7 @@ async function addAndEditJob(jobId = null) {
     discription.value = data.description
     position.value = data.position
   }
+
 }
 
 
@@ -294,7 +299,7 @@ async function addEditDetails(position, description, jobId) {
         description: descriptionValue,
         position: positionValue
       })
-      console.log("Document written with ID: ", docRef.id);
+      location.reload()
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -307,8 +312,6 @@ async function addEditDetails(position, description, jobId) {
   }
   }
 }
-
-
 
 function handleSwitchToMain() {
   main.innerHTML = ''
@@ -344,12 +347,9 @@ function getCityAndState(lat, lng) {
         const components = data.results[0].components;
         const city = components.city || components.town || components.village || '';
         const country = components.country || '';
-        console.log(`City: ${city}, State: ${country}`);
-        const data = {
-          city: city,
-          country: country
-        }
-        console.log(data, '>>>> city, country');
+        // console.log(`City: ${city}, State: ${country}`);
+        localStorage.setItem('city', JSON.stringify(city))
+        localStorage.setItem('country', JSON.stringify(country))
       } else {
         console.error('No results found');
       }

@@ -24,7 +24,6 @@ const addBtn = document.getElementById('add_btn')
 const userName = document.getElementById('user_name')
 const jobsEl = document.getElementById('jobEl')
 const noJob = document.getElementById('no_job')
-console.log("🚀 ~ noJob:", noJob)
 
 const isVerified = JSON.parse(localStorage.getItem('verified'))
 const city = JSON.parse(localStorage.getItem('city'))
@@ -44,7 +43,7 @@ window.onload = function () {
 }
 
 async function getAllJobs() {
-  try {
+  try {    
     const querySnapshot = await getDocs(collection(db, 'jobs'));
     querySnapshot.forEach((doc) => {
       return jobs(doc.id, doc.data())
@@ -66,7 +65,7 @@ function jobs(id, data) {
    <div key=${id} class="flex items-center justify-between py-5 px-6 bg-[#1e1c24] rounded-xl mb-3">
             <div>
                 <h2 class="text-base font-medium text-white font_poppins">${data.position}</h2>
-                <span class="font_poppins text-[#8F8F9E] text-sm">${city ?city+',': '' }${country ?country: ''}</span>
+                <span class="font_poppins text-[#8F8F9E] text-sm">${city ?city+',': '' } ${country ?country: ''}</span>
             </div>
              <div class="flex gap-5">
                <button class='edit_job' data-id=${id}>
@@ -183,7 +182,6 @@ if (!emailValue) {
 }
 
 
-
 function signUpHandle() {
   const signup = document.createElement('div')
   signup.innerHTML += `
@@ -278,7 +276,6 @@ async function addAndEditJob(jobId = null) {
 }
 
 
-
 async function addEditDetails(position, description, jobId) {
   const positionValue = position.value
   const descriptionValue = description.value
@@ -295,7 +292,7 @@ async function addEditDetails(position, description, jobId) {
   }else{  
    if (positionValue || descriptionValue) {
     try {
-      const docRef = await addDoc(collection(db, "jobs"), {
+       await addDoc(collection(db, "jobs"), {
         description: descriptionValue,
         position: positionValue
       })
@@ -324,7 +321,6 @@ function getLocation() {
       (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        console.log(`Latitude: ${lat}, Longitude: ${lng}`);
         getCityAndState(lat, lng);
       },
       (error) => {
@@ -347,7 +343,6 @@ function getCityAndState(lat, lng) {
         const components = data.results[0].components;
         const city = components.city || components.town || components.village || '';
         const country = components.country || '';
-        // console.log(`City: ${city}, State: ${country}`);
         localStorage.setItem('city', JSON.stringify(city))
         localStorage.setItem('country', JSON.stringify(country))
       } else {
